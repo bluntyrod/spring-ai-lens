@@ -1,3 +1,8 @@
 spring:
   application:
     name: spring-ai-lens
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, ai-lens
