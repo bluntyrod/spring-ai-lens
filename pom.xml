@@ -14,6 +14,7 @@
 	<artifactId>springailens</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>SpringAiLens</name>
+	<packaging>jar</packaging>
 	<description>Observability layer for LLM calls in Spring Boot apps</description>
 
 	<properties>
@@ -71,6 +72,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

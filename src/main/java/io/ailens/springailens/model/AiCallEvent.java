@@ -10,5 +10,6 @@ public record AiCallEvent(
         String response,
         long latencyMs,
         int promptTokens,
-        int completionTokens
+        int completionTokens,
+        AnomalyReport anomaly
 ) {}

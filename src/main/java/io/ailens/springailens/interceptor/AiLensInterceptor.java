@@ -1,12 +1,14 @@
 package io.ailens.springailens.interceptor;
 
+import io.ailens.springailens.anomaly.AnomalyDetector;
+import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.store.RingBufferEventStore;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -15,9 +17,11 @@ import java.util.UUID;
 public class AiLensInterceptor {
 
     private final RingBufferEventStore store;
+    private final AnomalyDetector anomalyDetector;
 
-    public AiLensInterceptor(RingBufferEventStore store) {
+    public AiLensInterceptor(RingBufferEventStore store, AnomalyDetector anomalyDetector) {
         this.store = store;
+        this.anomalyDetector = anomalyDetector;
     }
 
     @Around("execution(* org.springframework.ai.chat.model.ChatModel.call(..))")
@@ -47,7 +51,7 @@ public class AiLensInterceptor {
             }
         }
 
-        store.add(new AiCallEvent(
+        AiCallEvent event = new AiCallEvent(
                 UUID.randomUUID().toString(),
                 Instant.now(),
                 pjp.getTarget().getClass().getSimpleName(),
@@ -55,7 +59,17 @@ public class AiLensInterceptor {
                 responseText,
                 latencyMs,
                 promptTokens,
-                completionTokens
+                completionTokens,
+                AnomalyReport.none()
+        );
+
+        AnomalyReport anomaly = anomalyDetector.analyze(event);
+
+        store.add(new AiCallEvent(
+                event.id(), event.timestamp(), event.model(),
+                event.prompt(), event.response(), event.latencyMs(),
+                event.promptTokens(), event.completionTokens(),
+                anomaly
         ));
 
         return result;

@@ -1,6 +1,7 @@
 package io.ailens.springailens.config;
 
 import io.ailens.springailens.actuator.AiLensEndpoint;
+import io.ailens.springailens.anomaly.AnomalyDetector;
 import io.ailens.springailens.interceptor.AiLensInterceptor;
 import io.ailens.springailens.store.RingBufferEventStore;
 import io.ailens.springailens.web.AiLensDashboardController;
@@ -19,8 +20,14 @@ public class AiLensAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public AiLensInterceptor aiLensInterceptor(RingBufferEventStore store) {
-        return new AiLensInterceptor(store);
+    public AnomalyDetector aiLensAnomalyDetector(RingBufferEventStore store) {
+        return new AnomalyDetector(store);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public AiLensInterceptor aiLensInterceptor(RingBufferEventStore store, AnomalyDetector detector) {
+        return new AiLensInterceptor(store, detector);
     }
 
     @Bean

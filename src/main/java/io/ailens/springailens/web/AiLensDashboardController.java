@@ -35,23 +35,31 @@ public class AiLensDashboardController {
         StringBuilder rows = new StringBuilder();
         List<AiCallEvent> reversed = events.reversed();
         for (AiCallEvent e : reversed) {
+            String anomalyBadge = "";
+            if (e.anomaly() != null && e.anomaly().hasAnomaly()) {
+                anomalyBadge = "<span class='badge'>⚠ %s</span>".formatted(e.anomaly().message());
+            }
+
             rows.append("""
-                <tr>
-                    <td>%s</td>
-                    <td class="prompt">%s</td>
-                    <td class="response">%s</td>
-                    <td>%d ms</td>
-                    <td>%d / %d</td>
-                    <td>%s</td>
-                </tr>
-            """.formatted(
+        <tr class="%s">
+            <td>%s</td>
+            <td class="prompt">%s</td>
+            <td class="response">%s</td>
+            <td>%d ms</td>
+            <td>%d / %d</td>
+            <td>%s</td>
+            <td>%s</td>
+        </tr>
+    """.formatted(
+                    e.anomaly() != null && e.anomaly().hasAnomaly() ? "anomaly" : "",
                     e.model(),
                     truncate(e.prompt(), 80),
                     truncate(e.response(), 80),
                     e.latencyMs(),
                     e.promptTokens(),
                     e.completionTokens(),
-                    e.timestamp().toString()
+                    e.timestamp().toString(),
+                    anomalyBadge
             ));
         }
 
@@ -80,6 +88,8 @@ public class AiLensDashboardController {
                     tr:hover td { background: #fafafa; }
                     .prompt, .response { max-width: 300px; color: #444; }
                     .empty { text-align: center; padding: 48px; color: #aaa; }
+                    tr.anomaly td { background: #fff8f0; }
+                            .badge { background: #ff9800; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
                 </style>
             </head>
             <body>
@@ -97,11 +107,12 @@ public class AiLensDashboardController {
                         <thead>
                             <tr>
                                 <th>Model</th>
-                                <th>Prompt</th>
-                                <th>Response</th>
-                                <th>Latency</th>
-                                <th>Tokens (in/out)</th>
-                                <th>Timestamp</th>
+                                        <th>Prompt</th>
+                                        <th>Response</th>
+                                        <th>Latency</th>
+                                        <th>Tokens (in/out)</th>
+                                        <th>Timestamp</th>
+                                        <th>Anomaly</th>
                             </tr>
                         </thead>
                         <tbody>

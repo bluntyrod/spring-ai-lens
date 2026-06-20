@@ -1,6 +1,7 @@
 package io.ailens.springailens.actuator;
 
 import io.ailens.springailens.model.AiCallEvent;
+import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.store.RingBufferEventStore;
 import org.junit.jupiter.api.Test;
 
@@ -30,10 +31,9 @@ class AiLensEndpointTest {
         AiLensEndpoint endpoint = new AiLensEndpoint(store);
 
         store.add(new AiCallEvent(UUID.randomUUID().toString(), Instant.now(),
-                "OpenAiChatModel", "prompt 1", "response 1", 100, 10, 20));
+                "OpenAiChatModel", "prompt 1", "response 1", 100, 10, 20, AnomalyReport.none()));
         store.add(new AiCallEvent(UUID.randomUUID().toString(), Instant.now(),
-                "OpenAiChatModel", "prompt 2", "response 2", 200, 15, 25));
-
+                "OpenAiChatModel", "prompt 2", "response 2", 200, 15, 25, AnomalyReport.none()));
         AiLensEndpoint.AiLensReport report = endpoint.report();
 
         assertThat(report.totalCalls()).isEqualTo(2);

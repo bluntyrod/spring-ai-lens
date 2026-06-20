@@ -1,7 +1,9 @@
 package io.ailens.springailens.interceptor;
 
-import io.ailens.springailens.store.RingBufferEventStore;
+import io.ailens.springailens.anomaly.AnomalyDetector;
 import io.ailens.springailens.model.AiCallEvent;
+import io.ailens.springailens.store.RingBufferEventStore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -17,28 +19,30 @@ import static org.mockito.Mockito.*;
 
 class AiLensInterceptorTest {
 
-    @Test
-    void interceptorCapturesCallEvent() {
-        // build the store and interceptor
-        RingBufferEventStore store = new RingBufferEventStore(10);
-        AiLensInterceptor interceptor = new AiLensInterceptor(store);
+    private RingBufferEventStore store;
+    private ChatModel proxied;
 
-        // mock ChatModel returning a simple response
+    @BeforeEach
+    void setUp() {
+        store = new RingBufferEventStore(10);
+        AnomalyDetector anomalyDetector = new AnomalyDetector(store);
+        AiLensInterceptor interceptor = new AiLensInterceptor(store, anomalyDetector);
+
         ChatModel mockModel = mock(ChatModel.class);
         ChatResponse mockResponse = new ChatResponse(List.of(
                 new Generation(new AssistantMessage("Paris"))
         ));
         when(mockModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
-        // wrap mock with AOP proxy so our aspect fires
         AspectJProxyFactory factory = new AspectJProxyFactory(mockModel);
         factory.addAspect(interceptor);
-        ChatModel proxied = factory.getProxy();
+        proxied = factory.getProxy();
+    }
 
-        // make the call
+    @Test
+    void interceptorCapturesCallEvent() {
         proxied.call(new Prompt("What is the capital of France?"));
 
-        // assert event was captured
         List<AiCallEvent> events = store.getAll();
         assertThat(events).hasSize(1);
 
@@ -52,7 +56,9 @@ class AiLensInterceptorTest {
 
     @Test
     void ringBufferDropsOldestWhenFull() {
-        RingBufferEventStore store = new RingBufferEventStore(2);
+        store = new RingBufferEventStore(2);
+        AnomalyDetector anomalyDetector = new AnomalyDetector(store);
+        AiLensInterceptor interceptor = new AiLensInterceptor(store, anomalyDetector);
 
         ChatModel mockModel = mock(ChatModel.class);
         ChatResponse mockResponse = new ChatResponse(List.of(
@@ -61,12 +67,12 @@ class AiLensInterceptorTest {
         when(mockModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
         AspectJProxyFactory factory = new AspectJProxyFactory(mockModel);
-        factory.addAspect(new AiLensInterceptor(store));
-        ChatModel proxied = factory.getProxy();
+        factory.addAspect(interceptor);
+        ChatModel smallProxy = factory.getProxy();
 
-        proxied.call(new Prompt("question 1"));
-        proxied.call(new Prompt("question 2"));
-        proxied.call(new Prompt("question 3")); // should evict question 1
+        smallProxy.call(new Prompt("question 1"));
+        smallProxy.call(new Prompt("question 2"));
+        smallProxy.call(new Prompt("question 3"));
 
         List<AiCallEvent> events = store.getAll();
         assertThat(events).hasSize(2);

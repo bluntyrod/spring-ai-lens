@@ -1,6 +1,7 @@
 package io.ailens.springailens.web;
 
 import io.ailens.springailens.model.AiCallEvent;
+import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.store.RingBufferEventStore;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ class AiLensDashboardControllerTest {
     void dashboardRendersEventData() {
         RingBufferEventStore store = new RingBufferEventStore(10);
         store.add(new AiCallEvent(UUID.randomUUID().toString(), Instant.now(),
-                "OpenAiChatModel", "What is Java?", "A programming language", 42, 5, 10));
+                "OpenAiChatModel", "What is Java?", "A programming language", 42, 5, 10, AnomalyReport.none()));
 
         AiLensDashboardController controller = new AiLensDashboardController(store);
         String html = controller.dashboard();
@@ -42,8 +43,7 @@ class AiLensDashboardControllerTest {
         RingBufferEventStore store = new RingBufferEventStore(10);
         String longPrompt = "a".repeat(200);
         store.add(new AiCallEvent(UUID.randomUUID().toString(), Instant.now(),
-                "OpenAiChatModel", longPrompt, "response", 10, 5, 5));
-
+                "OpenAiChatModel", longPrompt, "response", 10, 5, 5, AnomalyReport.none()));
         AiLensDashboardController controller = new AiLensDashboardController(store);
         String html = controller.dashboard();
 
