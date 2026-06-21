@@ -6,3 +6,12 @@ management:
     web:
       exposure:
         include: health, ai-lens
+ai-lens:
+  buffer-size: 500          # how many calls to keep in memory
+  anomaly:
+    latency-threshold: 2.0  # multiplier above avg to flag latency spike
+    token-threshold: 2.0    # multiplier above avg to flag token spike
+    min-baseline-calls: 3   # min calls before anomaly detection kicks in
+  dashboard:
+    enabled: true           # toggle dashboard on/off
+    path: /ai-lens          # dashboard URL path

@@ -1,29 +1,32 @@
 package io.ailens.springailens.config;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
-
 import io.ailens.springailens.actuator.AiLensEndpoint;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
 import io.ailens.springailens.util.interceptor.AiLensInterceptor;
 import io.ailens.springailens.util.store.RingBufferEventStore;
 import io.ailens.springailens.web.AiLensDashboardController;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration
+@EnableConfigurationProperties(AiLensProperties.class)
 public class AiLensAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public RingBufferEventStore aiLensEventStore() {
-        return new RingBufferEventStore(500);
+    public RingBufferEventStore aiLensEventStore(AiLensProperties properties) {
+        return new RingBufferEventStore(properties.getBufferSize());
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public AnomalyDetector aiLensAnomalyDetector(RingBufferEventStore store) {
-        return new AnomalyDetector(store);
+    public AnomalyDetector aiLensAnomalyDetector(RingBufferEventStore store,
+                                                 AiLensProperties properties) {
+        return new AnomalyDetector(store, properties.getAnomaly());
     }
 
     @Bean
@@ -48,6 +51,7 @@ public class AiLensAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "ai-lens.dashboard", name = "enabled", havingValue = "true", matchIfMissing = true)
     public AiLensDashboardController aiLensDashboardController(RingBufferEventStore store) {
         return new AiLensDashboardController(store);
     }

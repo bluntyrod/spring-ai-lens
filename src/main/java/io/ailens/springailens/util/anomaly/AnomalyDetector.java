@@ -1,28 +1,27 @@
 package io.ailens.springailens.util.anomaly;
 
-import java.util.List;
-
+import io.ailens.springailens.config.AiLensProperties;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.AnomalyType;
 import io.ailens.springailens.util.store.RingBufferEventStore;
 
+import java.util.List;
+
 public class AnomalyDetector {
 
-    private static final double LATENCY_THRESHOLD = 2.0;
-    private static final double TOKEN_THRESHOLD = 2.0;
-    private static final int MIN_CALLS_FOR_BASELINE = 3;
-
     private final RingBufferEventStore store;
+    private final AiLensProperties.Anomaly config;
 
-    public AnomalyDetector(RingBufferEventStore store) {
+    public AnomalyDetector(RingBufferEventStore store, AiLensProperties.Anomaly config) {
         this.store = store;
+        this.config = config;
     }
 
     public AnomalyReport analyze(AiCallEvent event) {
         List<AiCallEvent> history = store.getAll();
 
-        if (history.size() < MIN_CALLS_FOR_BASELINE) {
+        if (history.size() < config.getMinBaselineCalls()) {
             return AnomalyReport.none();
         }
 
@@ -37,18 +36,17 @@ public class AnomalyDetector {
                 .orElse(0);
 
         boolean latencySpike = avgLatency > 0 &&
-                event.latencyMs() > avgLatency * LATENCY_THRESHOLD;
+                event.latencyMs() > avgLatency * config.getLatencyThreshold();
 
         boolean tokenSpike = avgTokens > 0 &&
-                (event.promptTokens() + event.completionTokens()) > avgTokens * TOKEN_THRESHOLD;
+                (event.promptTokens() + event.completionTokens()) > avgTokens * config.getTokenThreshold();
 
         if (latencySpike && tokenSpike) {
             return AnomalyReport.of(AnomalyType.LATENCY_AND_TOKEN_SPIKE,
                     "Latency %.0fms (avg %.0fms) and tokens %d (avg %.0f) both spiked"
                             .formatted(
                                     (double) event.latencyMs(), avgLatency,
-                                    event.promptTokens() + event.completionTokens(), avgTokens
-                            ));
+                                    event.promptTokens() + event.completionTokens(), avgTokens));
         } else if (latencySpike) {
             return AnomalyReport.of(AnomalyType.LATENCY_SPIKE,
                     "Latency %.0fms is %.1fx above avg %.0fms"

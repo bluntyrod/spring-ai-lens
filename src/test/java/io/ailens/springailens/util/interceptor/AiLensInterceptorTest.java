@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.List;
 
+import io.ailens.springailens.config.AiLensProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -27,7 +28,8 @@ class AiLensInterceptorTest {
     @BeforeEach
     void setUp() {
         store = new RingBufferEventStore(10);
-        AnomalyDetector anomalyDetector = new AnomalyDetector(store);
+        AiLensProperties.Anomaly anomalyConfig = new AiLensProperties.Anomaly();
+        AnomalyDetector anomalyDetector = new AnomalyDetector(store, anomalyConfig);
         PromptDiffTracker diffTracker = new PromptDiffTracker();
         AiLensInterceptor interceptor = new AiLensInterceptor(store, anomalyDetector, diffTracker);
 
@@ -61,8 +63,8 @@ class AiLensInterceptorTest {
     @Test
     void ringBufferDropsOldestWhenFull() {
         store = new RingBufferEventStore(2);
-        AnomalyDetector anomalyDetector = new AnomalyDetector(store);
-        PromptDiffTracker diffTracker = new PromptDiffTracker();
+        AiLensProperties.Anomaly anomalyConfig = new AiLensProperties.Anomaly();
+        AnomalyDetector anomalyDetector = new AnomalyDetector(store, anomalyConfig);PromptDiffTracker diffTracker = new PromptDiffTracker();
         AiLensInterceptor interceptor = new AiLensInterceptor(store, anomalyDetector, diffTracker);
         ChatModel mockModel = mock(ChatModel.class);
         ChatResponse mockResponse = new ChatResponse(List.of(
