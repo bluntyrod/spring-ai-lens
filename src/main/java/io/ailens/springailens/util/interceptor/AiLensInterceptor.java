@@ -15,6 +15,7 @@ import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.PromptDiffResult;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
+import io.ailens.springailens.util.metrics.AiLensMetrics;
 import io.ailens.springailens.util.otel.AiLensOtelExporter;
 import io.ailens.springailens.util.store.RingBufferEventStore;
 
@@ -25,18 +26,21 @@ public class AiLensInterceptor {
     private final AnomalyDetector anomalyDetector;
     private final PromptDiffTracker diffTracker;
     private final Optional<AiLensOtelExporter> otelExporter;
+    private final Optional<AiLensMetrics> metrics;
 
     public AiLensInterceptor(RingBufferEventStore store, AnomalyDetector anomalyDetector,
                              PromptDiffTracker diffTracker) {
-        this(store, anomalyDetector, diffTracker, Optional.empty());
+        this(store, anomalyDetector, diffTracker, Optional.empty(), Optional.empty());
     }
 
     public AiLensInterceptor(RingBufferEventStore store, AnomalyDetector anomalyDetector,
-                             PromptDiffTracker diffTracker, Optional<AiLensOtelExporter> otelExporter) {
+                             PromptDiffTracker diffTracker, Optional<AiLensOtelExporter> otelExporter,
+                             Optional<AiLensMetrics> metrics) {
         this.store = store;
         this.anomalyDetector = anomalyDetector;
         this.diffTracker = diffTracker;
         this.otelExporter = otelExporter;
+        this.metrics = metrics;
     }
 
     @Around("execution(* org.springframework.ai.chat.model.ChatModel.call(..))")
@@ -90,8 +94,8 @@ public class AiLensInterceptor {
         );
 
         store.add(finalEvent);
-        otelExporter.ifPresent(exporter -> exporter.export(finalEvent));
-
+        otelExporter.ifPresent(e -> e.export(finalEvent));
+        metrics.ifPresent(m -> m.record(finalEvent));
         return result;
     }
 }

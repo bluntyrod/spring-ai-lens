@@ -2,7 +2,6 @@ package io.ailens.springailens.config;
 
 import java.util.Optional;
 
-import io.ailens.springailens.advisor.AiLensStreamAdvisor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -11,12 +10,15 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 import io.ailens.springailens.actuator.AiLensEndpoint;
+import io.ailens.springailens.util.advisor.AiLensStreamAdvisor;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
 import io.ailens.springailens.util.interceptor.AiLensInterceptor;
+import io.ailens.springailens.util.metrics.AiLensMetrics;
 import io.ailens.springailens.util.otel.AiLensOtelExporter;
 import io.ailens.springailens.util.store.RingBufferEventStore;
 import io.ailens.springailens.web.AiLensDashboardController;
+import io.micrometer.core.instrument.MeterRegistry;
 
 @AutoConfiguration
 @EnableConfigurationProperties(AiLensProperties.class)
@@ -51,11 +53,29 @@ public class AiLensAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnClass(name = "io.micrometer.core.instrument.MeterRegistry")
+    public AiLensMetrics aiLensMetrics(MeterRegistry registry) {
+        return new AiLensMetrics(registry);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public AiLensInterceptor aiLensInterceptor(RingBufferEventStore store,
                                                AnomalyDetector detector,
                                                PromptDiffTracker diffTracker,
-                                               Optional<AiLensOtelExporter> otelExporter) {
-        return new AiLensInterceptor(store, detector, diffTracker, otelExporter);
+                                               Optional<AiLensOtelExporter> otelExporter,
+                                               Optional<AiLensMetrics> metrics) {
+        return new AiLensInterceptor(store, detector, diffTracker, otelExporter, metrics);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public AiLensStreamAdvisor aiLensStreamAdvisor(RingBufferEventStore store,
+                                                   AnomalyDetector detector,
+                                                   PromptDiffTracker diffTracker,
+                                                   Optional<AiLensOtelExporter> otelExporter,
+                                                   Optional<AiLensMetrics> metrics) {
+        return new AiLensStreamAdvisor(store, detector, diffTracker, otelExporter, metrics);
     }
 
     @Bean
@@ -71,12 +91,4 @@ public class AiLensAutoConfiguration {
         return new AiLensDashboardController(store);
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AiLensStreamAdvisor aiLensStreamAdvisor(RingBufferEventStore store,
-                                                   AnomalyDetector detector,
-                                                   PromptDiffTracker diffTracker,
-                                                   Optional<AiLensOtelExporter> otelExporter) {
-        return new AiLensStreamAdvisor(store, detector, diffTracker, otelExporter);
-    }
 }

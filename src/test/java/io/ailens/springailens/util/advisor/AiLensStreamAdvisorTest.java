@@ -1,28 +1,29 @@
-package io.ailens.springailens.advisor;
+package io.ailens.springailens.util.advisor;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.prompt.Prompt;
 
 import io.ailens.springailens.config.AiLensProperties;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
 import io.ailens.springailens.util.store.RingBufferEventStore;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.ai.chat.client.ChatClientRequest;
-import org.springframework.ai.chat.client.ChatClientResponse;
-import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.prompt.Prompt;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
 class AiLensStreamAdvisorTest {
 
@@ -34,7 +35,7 @@ class AiLensStreamAdvisorTest {
         store = new RingBufferEventStore(10);
         AnomalyDetector detector = new AnomalyDetector(store, new AiLensProperties.Anomaly());
         PromptDiffTracker diffTracker = new PromptDiffTracker();
-        advisor = new AiLensStreamAdvisor(store, detector, diffTracker, Optional.empty());
+        advisor = new AiLensStreamAdvisor(store, detector, diffTracker, Optional.empty(), Optional.empty());
     }
 
     @Test

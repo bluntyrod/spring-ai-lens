@@ -1,17 +1,4 @@
-package io.ailens.springailens.advisor;
-
-import io.ailens.springailens.model.AiCallEvent;
-import io.ailens.springailens.model.AnomalyReport;
-import io.ailens.springailens.model.PromptDiffResult;
-import io.ailens.springailens.util.otel.AiLensOtelExporter;
-import io.ailens.springailens.util.anomaly.AnomalyDetector;
-import io.ailens.springailens.util.diff.PromptDiffTracker;
-import io.ailens.springailens.util.store.RingBufferEventStore;
-import org.springframework.ai.chat.client.ChatClientRequest;
-import org.springframework.ai.chat.client.ChatClientResponse;
-import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
-import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
-import reactor.core.publisher.Flux;
+package io.ailens.springailens.util.advisor;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -19,21 +6,37 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
+
+import io.ailens.springailens.model.AiCallEvent;
+import io.ailens.springailens.model.AnomalyReport;
+import io.ailens.springailens.model.PromptDiffResult;
+import io.ailens.springailens.util.anomaly.AnomalyDetector;
+import io.ailens.springailens.util.diff.PromptDiffTracker;
+import io.ailens.springailens.util.metrics.AiLensMetrics;
+import io.ailens.springailens.util.otel.AiLensOtelExporter;
+import io.ailens.springailens.util.store.RingBufferEventStore;
+import reactor.core.publisher.Flux;
+
 public class AiLensStreamAdvisor implements StreamAdvisor {
 
     private final RingBufferEventStore store;
     private final AnomalyDetector anomalyDetector;
     private final PromptDiffTracker diffTracker;
     private final Optional<AiLensOtelExporter> otelExporter;
-
+    private final Optional<AiLensMetrics> metrics;
     public AiLensStreamAdvisor(RingBufferEventStore store,
                                AnomalyDetector anomalyDetector,
                                PromptDiffTracker diffTracker,
-                               Optional<AiLensOtelExporter> otelExporter) {
+                               Optional<AiLensOtelExporter> otelExporter, Optional<AiLensMetrics> metrics) {
         this.store = store;
         this.anomalyDetector = anomalyDetector;
         this.diffTracker = diffTracker;
         this.otelExporter = otelExporter;
+        this.metrics = metrics;
     }
 
     @Override
@@ -98,6 +101,7 @@ public class AiLensStreamAdvisor implements StreamAdvisor {
 
                     store.add(finalEvent);
                     otelExporter.ifPresent(e -> e.export(finalEvent));
+                    metrics.ifPresent(m->m.record(finalEvent));
                 });
     }
 
