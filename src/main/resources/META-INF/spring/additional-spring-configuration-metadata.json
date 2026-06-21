@@ -1,0 +1,51 @@
+{
+  "properties": [
+    {
+      "name": "ai-lens.buffer-size",
+      "type": "java.lang.Integer",
+      "defaultValue": 500,
+      "description": "Maximum number of LLM calls to keep in the in-memory ring buffer."
+    },
+    {
+      "name": "ai-lens.anomaly.latency-threshold",
+      "type": "java.lang.Double",
+      "defaultValue": 2.0,
+      "description": "Multiplier above average latency to flag a call as a latency spike. Default is 2.0 (2x average)."
+    },
+    {
+      "name": "ai-lens.anomaly.token-threshold",
+      "type": "java.lang.Double",
+      "defaultValue": 2.0,
+      "description": "Multiplier above average token count to flag a call as a token spike. Default is 2.0 (2x average)."
+    },
+    {
+      "name": "ai-lens.anomaly.min-baseline-calls",
+      "type": "java.lang.Integer",
+      "defaultValue": 3,
+      "description": "Minimum number of calls required before anomaly detection kicks in."
+    },
+    {
+      "name": "ai-lens.dashboard.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Enable or disable the embedded dashboard at /ai-lens."
+    },
+    {
+      "name": "ai-lens.dashboard.path",
+      "type": "java.lang.String",
+      "defaultValue": "/ai-lens",
+      "description": "URL path for the embedded dashboard."
+    }
+  ],
+  "hints": [
+    {
+      "name": "ai-lens.dashboard.path",
+      "values": [
+        {
+          "value": "/ai-lens",
+          "description": "Default dashboard path"
+        }
+      ]
+    }
+  ]
+}
