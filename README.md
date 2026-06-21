@@ -1,3 +1,10 @@
+# spring-ai-lens
+
+[![CI](https://github.com/pandey-prateek/spring-ai-lens/actions/workflows/ci.yml/badge.svg)](https://github.com/pandey-prateek/spring-ai-lens/actions/workflows/ci.yml)
+[![Java](https://img.shields.io/badge/Java-21-blue)](https://openjdk.org/projects/jdk/21/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-green)](https://spring.io/projects/spring-boot)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
+
 ## What it does
 
 Drop `spring-ai-lens` into any Spring Boot app and instantly get:
