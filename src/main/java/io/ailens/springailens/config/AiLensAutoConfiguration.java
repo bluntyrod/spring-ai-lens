@@ -40,13 +40,6 @@ public class AiLensAutoConfiguration {
         return new PromptDiffTracker();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AiLensInterceptor aiLensInterceptor(RingBufferEventStore store,
-                                               AnomalyDetector detector,
-                                               PromptDiffTracker diffTracker) {
-        return new AiLensInterceptor(store, detector, diffTracker);
-    }
 
     @Bean
     @ConditionalOnMissingBean
