@@ -2,6 +2,7 @@ package io.ailens.springailens.config;
 
 import java.util.Optional;
 
+import io.ailens.springailens.advisor.AiLensStreamAdvisor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -68,5 +69,14 @@ public class AiLensAutoConfiguration {
     @ConditionalOnProperty(prefix = "ai-lens.dashboard", name = "enabled", havingValue = "true", matchIfMissing = true)
     public AiLensDashboardController aiLensDashboardController(RingBufferEventStore store) {
         return new AiLensDashboardController(store);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public AiLensStreamAdvisor aiLensStreamAdvisor(RingBufferEventStore store,
+                                                   AnomalyDetector detector,
+                                                   PromptDiffTracker diffTracker,
+                                                   Optional<AiLensOtelExporter> otelExporter) {
+        return new AiLensStreamAdvisor(store, detector, diffTracker, otelExporter);
     }
 }
