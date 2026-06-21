@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Instant;
 import java.util.UUID;
 
-import io.ailens.springailens.config.AiLensProperties;
 import org.junit.jupiter.api.Test;
 
+import io.ailens.springailens.config.AiLensProperties;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.AnomalyType;

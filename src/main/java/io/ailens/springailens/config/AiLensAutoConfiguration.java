@@ -1,12 +1,7 @@
 package io.ailens.springailens.config;
 
-import io.ailens.springailens.actuator.AiLensEndpoint;
-import io.ailens.springailens.util.otel.AiLensOtelExporter;
-import io.ailens.springailens.util.anomaly.AnomalyDetector;
-import io.ailens.springailens.util.diff.PromptDiffTracker;
-import io.ailens.springailens.util.interceptor.AiLensInterceptor;
-import io.ailens.springailens.util.store.RingBufferEventStore;
-import io.ailens.springailens.web.AiLensDashboardController;
+import java.util.Optional;
+
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -14,7 +9,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
-import java.util.Optional;
+import io.ailens.springailens.actuator.AiLensEndpoint;
+import io.ailens.springailens.util.anomaly.AnomalyDetector;
+import io.ailens.springailens.util.diff.PromptDiffTracker;
+import io.ailens.springailens.util.interceptor.AiLensInterceptor;
+import io.ailens.springailens.util.otel.AiLensOtelExporter;
+import io.ailens.springailens.util.store.RingBufferEventStore;
+import io.ailens.springailens.web.AiLensDashboardController;
 
 @AutoConfiguration
 @EnableConfigurationProperties(AiLensProperties.class)
