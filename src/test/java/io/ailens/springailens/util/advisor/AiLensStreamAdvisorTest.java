@@ -17,23 +17,24 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 
-import io.ailens.springailens.config.AiLensProperties;
+import io.ailens.springailens.config.AnomalyProperties;
 import io.ailens.springailens.model.AiCallEvent;
+import io.ailens.springailens.util.EventStore;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
-import io.ailens.springailens.util.store.RingBufferEventStore;
+import io.ailens.springailens.util.store.InMemoryEventStore;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 class AiLensStreamAdvisorTest {
 
-    private RingBufferEventStore store;
+    private EventStore store;
     private AiLensStreamAdvisor advisor;
 
     @BeforeEach
     void setUp() {
-        store = new RingBufferEventStore(10);
-        AnomalyDetector detector = new AnomalyDetector(store, new AiLensProperties.Anomaly());
+        store = new InMemoryEventStore(10);
+        AnomalyDetector detector = new AnomalyDetector(store, new AnomalyProperties());
         PromptDiffTracker diffTracker = new PromptDiffTracker();
         advisor = new AiLensStreamAdvisor(store, detector, diffTracker, Optional.empty(), Optional.empty());
     }

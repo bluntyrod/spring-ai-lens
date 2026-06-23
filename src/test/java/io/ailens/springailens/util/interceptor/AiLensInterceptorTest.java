@@ -14,21 +14,22 @@ import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 
-import io.ailens.springailens.config.AiLensProperties;
+import io.ailens.springailens.config.AnomalyProperties;
 import io.ailens.springailens.model.AiCallEvent;
+import io.ailens.springailens.util.EventStore;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
-import io.ailens.springailens.util.store.RingBufferEventStore;
+import io.ailens.springailens.util.store.InMemoryEventStore;
 
 class AiLensInterceptorTest {
 
-    private RingBufferEventStore store;
+    private EventStore store;
     private ChatModel proxied;
 
     @BeforeEach
     void setUp() {
-        store = new RingBufferEventStore(10);
-        AiLensProperties.Anomaly anomalyConfig = new AiLensProperties.Anomaly();
+        store = new InMemoryEventStore(10);
+        AnomalyProperties anomalyConfig = new AnomalyProperties();
         AnomalyDetector anomalyDetector = new AnomalyDetector(store, anomalyConfig);
         PromptDiffTracker diffTracker = new PromptDiffTracker();
         AiLensInterceptor interceptor = new AiLensInterceptor(store, anomalyDetector, diffTracker);
@@ -62,8 +63,8 @@ class AiLensInterceptorTest {
 
     @Test
     void ringBufferDropsOldestWhenFull() {
-        store = new RingBufferEventStore(2);
-        AiLensProperties.Anomaly anomalyConfig = new AiLensProperties.Anomaly();
+        store = new InMemoryEventStore(2);
+        AnomalyProperties anomalyConfig = new AnomalyProperties();
         AnomalyDetector anomalyDetector = new AnomalyDetector(store, anomalyConfig);PromptDiffTracker diffTracker = new PromptDiffTracker();
         AiLensInterceptor interceptor = new AiLensInterceptor(store, anomalyDetector, diffTracker);
         ChatModel mockModel = mock(ChatModel.class);

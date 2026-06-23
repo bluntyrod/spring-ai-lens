@@ -6,14 +6,14 @@ import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 
 import io.ailens.springailens.model.AiCallEvent;
-import io.ailens.springailens.util.store.RingBufferEventStore;
+import io.ailens.springailens.util.EventStore;
 
 @Endpoint(id = "ai-lens")
 public class AiLensEndpoint {
 
-    private final RingBufferEventStore store;
+    private final EventStore store;
 
-    public AiLensEndpoint(RingBufferEventStore store) {
+    public AiLensEndpoint(EventStore store) {
         this.store = store;
     }
 

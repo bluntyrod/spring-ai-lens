@@ -8,15 +8,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.ailens.springailens.model.AiCallEvent;
-import io.ailens.springailens.util.store.RingBufferEventStore;
+import io.ailens.springailens.util.EventStore;
 
 @RestController
 @RequestMapping("/ai-lens")
 public class AiLensDashboardController {
 
-    private final RingBufferEventStore store;
+    private final EventStore store;
 
-    public AiLensDashboardController(RingBufferEventStore store) {
+    public AiLensDashboardController(EventStore store) {
         this.store = store;
     }
 

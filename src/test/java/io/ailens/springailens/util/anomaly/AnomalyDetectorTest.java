@@ -7,11 +7,12 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import io.ailens.springailens.config.AiLensProperties;
+import io.ailens.springailens.config.AnomalyProperties;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.AnomalyType;
-import io.ailens.springailens.util.store.RingBufferEventStore;
+import io.ailens.springailens.util.EventStore;
+import io.ailens.springailens.util.store.InMemoryEventStore;
 
 class AnomalyDetectorTest {
 
@@ -29,13 +30,13 @@ class AnomalyDetectorTest {
                 null
         );
     }
-    private AnomalyDetector detector(RingBufferEventStore store) {
-        AiLensProperties.Anomaly config = new AiLensProperties.Anomaly();
+    private AnomalyDetector detector(EventStore store) {
+        AnomalyProperties config = new AnomalyProperties();
         return new AnomalyDetector(store, config);
     }
     @Test
     void noAnomalyWhenInsufficientHistory() {
-        RingBufferEventStore store = new RingBufferEventStore(10);
+        EventStore store = new InMemoryEventStore(10);
         AnomalyDetector detector = detector(store);
 
         store.add(event(100, 10, 10));
@@ -48,7 +49,7 @@ class AnomalyDetectorTest {
 
     @Test
     void detectsLatencySpike() {
-        RingBufferEventStore store = new RingBufferEventStore(10);
+        EventStore store = new InMemoryEventStore(10);
         AnomalyDetector detector = detector(store);
 
         store.add(event(100, 10, 10));
@@ -64,7 +65,7 @@ class AnomalyDetectorTest {
 
     @Test
     void detectsTokenSpike() {
-        RingBufferEventStore store = new RingBufferEventStore(10);
+        EventStore store = new InMemoryEventStore(10);
         AnomalyDetector detector = detector(store);
 
         store.add(event(100, 10, 10));
@@ -79,7 +80,7 @@ class AnomalyDetectorTest {
 
     @Test
     void detectsBothSpikes() {
-        RingBufferEventStore store = new RingBufferEventStore(10);
+        EventStore store = new InMemoryEventStore(10);
         AnomalyDetector detector = detector(store);
 
         store.add(event(100, 10, 10));
@@ -94,7 +95,7 @@ class AnomalyDetectorTest {
 
     @Test
     void noAnomalyForNormalCall() {
-        RingBufferEventStore store = new RingBufferEventStore(10);
+        EventStore store = new InMemoryEventStore(10);
         AnomalyDetector detector = detector(store);
 
         store.add(event(100, 10, 10));

@@ -14,21 +14,21 @@ import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.PromptDiffResult;
+import io.ailens.springailens.util.EventStore;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
 import io.ailens.springailens.util.metrics.AiLensMetrics;
 import io.ailens.springailens.util.otel.AiLensOtelExporter;
-import io.ailens.springailens.util.store.RingBufferEventStore;
 import reactor.core.publisher.Flux;
 
 public class AiLensStreamAdvisor implements StreamAdvisor {
 
-    private final RingBufferEventStore store;
+    private final EventStore store;
     private final AnomalyDetector anomalyDetector;
     private final PromptDiffTracker diffTracker;
     private final Optional<AiLensOtelExporter> otelExporter;
     private final Optional<AiLensMetrics> metrics;
-    public AiLensStreamAdvisor(RingBufferEventStore store,
+    public AiLensStreamAdvisor(EventStore store,
                                AnomalyDetector anomalyDetector,
                                PromptDiffTracker diffTracker,
                                Optional<AiLensOtelExporter> otelExporter, Optional<AiLensMetrics> metrics) {

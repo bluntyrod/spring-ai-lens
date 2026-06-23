@@ -2,18 +2,18 @@ package io.ailens.springailens.util.anomaly;
 
 import java.util.List;
 
-import io.ailens.springailens.config.AiLensProperties;
+import io.ailens.springailens.config.AnomalyProperties;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.AnomalyType;
-import io.ailens.springailens.util.store.RingBufferEventStore;
+import io.ailens.springailens.util.EventStore;
 
 public class AnomalyDetector {
 
-    private final RingBufferEventStore store;
-    private final AiLensProperties.Anomaly config;
+    private final EventStore store;
+    private final AnomalyProperties config;
 
-    public AnomalyDetector(RingBufferEventStore store, AiLensProperties.Anomaly config) {
+    public AnomalyDetector(EventStore store, AnomalyProperties config) {
         this.store = store;
         this.config = config;
     }

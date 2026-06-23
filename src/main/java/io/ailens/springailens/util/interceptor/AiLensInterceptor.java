@@ -13,27 +13,27 @@ import org.springframework.ai.chat.prompt.Prompt;
 import io.ailens.springailens.model.AiCallEvent;
 import io.ailens.springailens.model.AnomalyReport;
 import io.ailens.springailens.model.PromptDiffResult;
+import io.ailens.springailens.util.EventStore;
 import io.ailens.springailens.util.anomaly.AnomalyDetector;
 import io.ailens.springailens.util.diff.PromptDiffTracker;
 import io.ailens.springailens.util.metrics.AiLensMetrics;
 import io.ailens.springailens.util.otel.AiLensOtelExporter;
-import io.ailens.springailens.util.store.RingBufferEventStore;
 
 @Aspect
 public class AiLensInterceptor {
 
-    private final RingBufferEventStore store;
+    private final EventStore store;
     private final AnomalyDetector anomalyDetector;
     private final PromptDiffTracker diffTracker;
     private final Optional<AiLensOtelExporter> otelExporter;
     private final Optional<AiLensMetrics> metrics;
 
-    public AiLensInterceptor(RingBufferEventStore store, AnomalyDetector anomalyDetector,
+    public AiLensInterceptor(EventStore store, AnomalyDetector anomalyDetector,
                              PromptDiffTracker diffTracker) {
         this(store, anomalyDetector, diffTracker, Optional.empty(), Optional.empty());
     }
 
-    public AiLensInterceptor(RingBufferEventStore store, AnomalyDetector anomalyDetector,
+    public AiLensInterceptor(EventStore store, AnomalyDetector anomalyDetector,
                              PromptDiffTracker diffTracker, Optional<AiLensOtelExporter> otelExporter,
                              Optional<AiLensMetrics> metrics) {
         this.store = store;
