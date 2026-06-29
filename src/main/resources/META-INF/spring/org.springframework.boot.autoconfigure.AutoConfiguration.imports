@@ -1,1 +1,4 @@
-config.com.bluntyrod.springailens.AiLensAutoConfiguration
+com.bluntyrod.springailens.config.AiLensMemoryAutoConfiguration
+com.bluntyrod.springailens.config.AiLensRedisAutoConfiguration
+com.bluntyrod.springailens.config.AiLensPostgresAutoConfiguration
+com.bluntyrod.springailens.config.AiLensAutoConfiguration
