@@ -3,6 +3,7 @@ package com.bluntyrod.springailens.config;
 import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -21,6 +22,7 @@ import com.bluntyrod.springailens.util.otel.AiLensOtelExporter;
 import com.bluntyrod.springailens.web.AiLensDashboardController;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.api.OpenTelemetry;
 
 @AutoConfiguration
 @EnableConfigurationProperties(AiLensProperties.class)
@@ -45,11 +47,32 @@ public class AiLensAutoConfiguration {
         return new PromptRegressionAlerter(properties.getDiff());
     }
 
+    /**
+     * Primary path: Spring Boot (via micrometer-tracing's OTel bridge, or any
+     * starter that registers an OpenTelemetry bean) already manages an
+     * {@link OpenTelemetry} instance configured for whatever backend the user
+     * set up via {@code management.tracing.*}/{@code management.otlp.*}
+     * properties — Tempo, Honeycomb, Datadog Agent, Zipkin, Jaeger-via-OTLP,
+     * anything. We just reuse it.
+     */
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(AiLensOtelExporter.class)
+    @ConditionalOnBean(OpenTelemetry.class)
+    public AiLensOtelExporter aiLensOtelExporter(OpenTelemetry openTelemetry) {
+        return new AiLensOtelExporter(openTelemetry);
+    }
+
+    /**
+     * Fallback path: no Spring-managed OpenTelemetry bean exists (e.g. tracing
+     * is wired purely via a Java agent, which registers only the static
+     * GlobalOpenTelemetry singleton). Still works, just one step removed from
+     * Spring's own autoconfiguration.
+     */
+    @Bean
+    @ConditionalOnMissingBean({AiLensOtelExporter.class, OpenTelemetry.class})
     @ConditionalOnClass(name = "io.opentelemetry.api.GlobalOpenTelemetry")
-    public AiLensOtelExporter aiLensOtelExporter() {
-        return new AiLensOtelExporter();
+    public AiLensOtelExporter aiLensOtelExporterGlobalFallback() {
+        return new AiLensOtelExporter(io.opentelemetry.api.GlobalOpenTelemetry.get());
     }
 
     @Bean

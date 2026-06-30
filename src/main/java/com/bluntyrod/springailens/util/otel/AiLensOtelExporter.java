@@ -2,7 +2,7 @@ package com.bluntyrod.springailens.util.otel;
 
 import com.bluntyrod.springailens.model.AiCallEvent;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -12,8 +12,15 @@ public class AiLensOtelExporter {
     private static final String INSTRUMENTATION_NAME = "spring-ai-lens";
     private final Tracer tracer;
 
-    public AiLensOtelExporter() {
-        this.tracer = GlobalOpenTelemetry.getTracer(INSTRUMENTATION_NAME);
+    /**
+     * Takes an {@link OpenTelemetry} instance rather than reaching for
+     * {@code GlobalOpenTelemetry}. This is the vendor-neutral entry point of the
+     * OTel SDK: whichever exporter that instance is configured with (OTLP to
+     * Grafana Tempo, Honeycomb, Datadog Agent, a Zipkin exporter, Jaeger via OTLP,
+     * etc.) just works — this class never hardcodes a backend.
+     */
+    public AiLensOtelExporter(OpenTelemetry openTelemetry) {
+        this.tracer = openTelemetry.getTracer(INSTRUMENTATION_NAME);
     }
 
     public void export(AiCallEvent event) {

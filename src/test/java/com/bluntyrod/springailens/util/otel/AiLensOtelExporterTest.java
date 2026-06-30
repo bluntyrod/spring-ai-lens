@@ -16,7 +16,6 @@ import com.bluntyrod.springailens.model.AnomalyType;
 import com.bluntyrod.springailens.model.DiffStatus;
 import com.bluntyrod.springailens.model.PromptDiffResult;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -34,15 +33,14 @@ class AiLensOtelExporterTest {
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
                 .build();
-        OpenTelemetrySdk.builder()
+        OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
                 .setTracerProvider(tracerProvider)
-                .buildAndRegisterGlobal();
-        otelExporter = new AiLensOtelExporter();
+                .build();
+        otelExporter = new AiLensOtelExporter(sdk);
     }
 
     @AfterEach
     void tearDown() {
-        GlobalOpenTelemetry.resetForTest();
         spanExporter.reset();
     }
 
